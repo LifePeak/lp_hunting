@@ -1,6 +1,8 @@
-ESX                = nil
+------------------------------------| Register ESX |-------------------------------------
+ESX = nil
 
-TriggerEvent('FIVELIFERPDEZXN4OmdldFNoYXJlZE9iamVjdAZICKZACKHD', function(obj) ESX = obj end)
+TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
+
 
 RegisterServerEvent('lp_hunting:reward')
 AddEventHandler('lp_hunting:reward', function(Weight)

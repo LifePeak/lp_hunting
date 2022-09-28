@@ -61,9 +61,12 @@ function ScriptLoaded()
 	LoadMarkers()
 
 	local playerData = ESX.GetPlayerData()
-
-	if playerData.job.name == 'hunter' then
-		LoadMapMarkers()
+	if Config.ReqireHuntingJob == true then
+		if playerData.job.name == 'hunter' then
+			LoadMapMarkers()
+		end
+	else
+		LoadMapMarkers()		
 	end
 end
 -- notification Handler
@@ -77,17 +80,23 @@ end
 
 function LoadMapMarkers()
 	Citizen.CreateThread(function()
-		for index, v in pairs(Positions) do
-			if index ~= 'SpawnATV' then
-				v.blipId = v.blipId or AddBlipForCoord(v.x, v.y, v.z)
-				SetBlipSprite(v.blipId, v.sprite)
-				SetBlipColour(v.blipId, 75)
-				SetBlipScale(v.blipId, 0.7)
-				SetBlipAsShortRange(v.blipId, true)
-				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString(v.label)
-				EndTextCommandSetBlipName(v.blipId)
+		for index, v in pairs(Config.Mensions) do
+			local label = nil
+			if index == "StartHunting" then
+				label = "Jagdgrund"
 			end
+			if index == "Sell" then
+				label = "Wildhandel"
+			end
+			v.blipId = v.blipId or AddBlipForCoord(v.x, v.y, v.z)
+			SetBlipSprite(v.blipId, v.sprite)
+			SetBlipColour(v.blipId, 75)
+			SetBlipScale(v.blipId, 0.7)
+			SetBlipAsShortRange(v.blipId, true)
+			BeginTextCommandSetBlipName("STRING")
+			AddTextComponentString(label)
+			EndTextCommandSetBlipName(v.blipId)
+			
 		end
 	end)
 end
@@ -105,16 +114,28 @@ end
 
 function IsPlayerInHuntingArea()
 	local plyCoords = GetEntityCoords(PlayerPedId())
-	local p = Positions.StartHunting
+	for k,v in pairs(Config.HuntingAreaRanges) do
+		local huntingArea = v.coord
+		local distance = #(plyCoords.xy-huntingArea.xy)
+		if distance >= v.radius then
+			return true
+		end
 
-	local distance = GetDistanceBetweenCoords(plyCoords, p.x, p.y, p.z, true)
-
-	return distance <= Config.HuntingAreaRange
+	end
+	return false
+	--local distance = GetDistanceBetweenCoords(plyCoords, p.x, p.y, p.z, true)
 end
 
 function LoadMarkers()
-	LoadModel('blazer')
-	LoadModel('a_c_deer')
+	for _, ped in pairs(Config.HunntingAnimals) do
+		LoadModel(ped.model)
+		while not HasModelLoaded(ped.model) do
+			Citizen.Wait(100)
+			print("Loading"..ped.model.."...")
+		end
+	end
+	--LoadModel('blazer')
+	--LoadModel('a_c_deer')
 	LoadAnimDict('amb@medic@standing@kneel@base')
 	LoadAnimDict('anim@gangops@facility@servers@bodysearch@')
 
@@ -124,46 +145,62 @@ function LoadMarkers()
 			
 			local plyCoords = GetEntityCoords(PlayerPedId())
 
-			local inHuntingArea = IsPlayerInHuntingArea()
 
-			if OnGoingHuntSession and not inHuntingArea then
+			if OnGoingHuntSession and not IsPlayerInHuntingArea() then
 				ESX.ShowNotification('~r~Deine Jagdsitzung wurde beendet! Du bist zuweit vom Jagdgebiet weg.')
 				StartHuntingSession()
 			end
+			
 
-			for index, value in pairs(Positions) do
-				if value.hint ~= nil then
-
-					if OnGoingHuntSession and index == 'StartHunting' then
-						value.hint = '[E] Jagd beenden'
-					elseif not OnGoingHuntSession and index == 'StartHunting' then
-						value.hint = '[E] Jagd starten'
-					end
-
-					local distance = GetDistanceBetweenCoords(plyCoords, value.x, value.y, value.z, true)
-
-					if distance < 5.0 then
-						sleep = 5
-						DrawM(value.hint, 27, value.x, value.y, value.z - 0.945, 255, 255, 255, 1.5, 15)
-						if distance < 1.0 then
-							if IsControlJustReleased(0, Keys['E']) then
-								if index == 'StartHunting' then
-									StartHuntingSession()
-								else
-									SellItems()
-								end
-							end
+			for index ,value in pairs(Config.Mensions.StartHunting) do
+				local hint
+				if OnGoingHuntSession then
+					hint = '[E] Jagd beenden'
+				end
+				if not OnGoingHuntSession then
+					hint = '[E] Jagd starten'
+				end
+				local distance = #(plyCoords-value)
+				if distance < 5.0 then
+					sleep = 5
+					DrawM(hint, 27, value.x, value.y, value.z - 0.945, 255, 255, 255, 1.5, 15)
+					if distance < 1.0 then
+						if IsControlJustReleased(0, Keys['E']) then
+							StartHuntingSession()
 						end
 					end
-
-				end
-				
+				end 
+			end
+			for index ,value in pairs(Config.Mensions.Sell) do
+				local distance = #(plyCoords-value)
+				local hint = "[E] Verkaufe Items"
+				if distance < 5.0 then
+					sleep = 5
+					DrawM(hint, 27, value.x, value.y, value.z - 0.945, 255, 255, 255, 1.5, 15)
+					if distance < 1.0 then
+						if IsControlJustReleased(0, Keys['E']) then
+							SellItems()
+						end
+					end
+				end 
 			end
 			Citizen.Wait(sleep)
 		end
 	end)
 end
+function getNearestHuntingArea()
+	local plyCoords = GetEntityCoords(PlayerPedId())
+	local nearestHuntingArea = nil
+	for k, v in pairs(Config.HuntingAreaRanges) do
+		for index,vv in ipairs(v) do
+			if nearestHuntingArea == nil then
+				nearestHuntingArea = index
+			end
+			v.coord
+		end
+	end
 
+end
 function StartHuntingSession()
 
 	if OnGoingHuntSession then
@@ -195,7 +232,23 @@ function StartHuntingSession()
 		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"),0, true, false)
 
 		-- Animals
-
+		--[[
+				local Positions = {
+					StartHunting = {
+						blipId = nil,
+						hint = "[E] Jagd starten", sprite = 442, label = "Jagdgrund",
+						x = -1058.8522949219, y = 4915.3295898438, z = 211.81875610352
+					},
+					Sell = {
+						blipId = nil,
+						hint = "[E] Verkaufen", sprite = 467, label = "Wildhandel",
+						x = 949.26916503906, y = -2102.3935546875, z = 30.675149917603
+					},
+					SpawnATV = {
+						x = 0, y = 0, z = 0
+					}
+				}
+			--]]
 		local habs = Positions.StartHunting
 		HuntingAreaBlip = AddBlipForRadius(habs.x, habs.y, habs.z, Config.HuntingAreaRange)
 		SetBlipHighDetail(HuntingAreaBlip, true)

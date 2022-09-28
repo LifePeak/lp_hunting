@@ -1,40 +1,39 @@
 Config = {}
 Config.Locale  = 'de'
-
+Config.ReqireHuntingJob = false
 Config.HuntingWeapon = "WEAPON_MUSKET"
-Config.HuntingAreaRange = 460.0
 
 Config.HunntingAnimals = {
     [0] = {
-        ['model'] = "a_c_boar"
+        ['model'] = "a_c_boar",
         ['probability'] = 0.1, --  = 10%
-    }
+    },
     [1] = {
-        ['model'] = "a_c_deer"
+        ['model'] = "a_c_deer",
         ['probability'] = 0.3, --  = 30%
-    }
+    },
     [2] = {
-        ['model'] = "a_c_coyote"
+        ['model'] = "a_c_coyote",
         ['probability'] = 0.3, --  = 30%
-    }
+    },
     [3] = {
-        ['model'] = "a_c_husky"
+        ['model'] = "a_c_husky",
         ['probability'] = 0.3, --  = 30%
-    }
+    },
    [4] = {
-    ['model'] = "a_c_pig"
+    ['model'] = "a_c_pig",
     ['probability'] = 0.3, --  = 30%
-   }
+   },
    [5] = {
-    ['model'] = "a_c_pig"
+    ['model'] = "a_c_pig",
     ['probability'] = 0.3, --  = 30%
-   }
+   },
    [6] = {
-    ['model'] = "a_c_rabbit_01"
+    ['model'] = "a_c_rabbit_01",
     ['probability'] = 0.3, --  = 30%
    }
 }
-Cofing.HuntingAreaRanges = {
+Config.HuntingAreaRanges = {
     [0] = {
         ["coord"]= vector3(1,1,1),
         ["radius"] = 460
@@ -44,10 +43,12 @@ Cofing.HuntingAreaRanges = {
         ["radius"] = 460
     }
 }
-Config.HunntingMensions {
-    [0] = {
-        ["coord"] = vector3(1,3,5),
-        ["actions"] = {"start","sell"}
+Config.Mensions = {
+    StartHunting = {
+        vector3(-1058.8522949219, 4915.3295898438,211.81875610352),
+    },
+    Sell = {
+        vector3(-1068.8522949219, 4925.3295898438,221.81875610352),
     }
 }
 

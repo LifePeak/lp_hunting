@@ -14,14 +14,12 @@ shared_script {
 
 client_script {
     "@NativeUI/NativeUI.lua",
-	"config.lua",
 	"shared/functions.lua",
 	"client/main.lua"
 }
 
 server_script {
 	'@mysql-async/lib/MySQL.lua',
-    "config.lua",
 	"shared/functions.lua",
     "server/main.lua"
 }
