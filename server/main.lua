@@ -2,8 +2,8 @@ ESX                = nil
 
 TriggerEvent('FIVELIFERPDEZXN4OmdldFNoYXJlZE9iamVjdAZICKZACKHD', function(obj) ESX = obj end)
 
-RegisterServerEvent('esx-qalle-hunting:reward')
-AddEventHandler('esx-qalle-hunting:reward', function(Weight)
+RegisterServerEvent('lp_hunting:reward')
+AddEventHandler('lp_hunting:reward', function(Weight)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if Weight >= 1 then
@@ -18,8 +18,8 @@ AddEventHandler('esx-qalle-hunting:reward', function(Weight)
         
 end)
 
-RegisterServerEvent('esx-qalle-hunting:sell')
-AddEventHandler('esx-qalle-hunting:sell', function()
+RegisterServerEvent('lp_hunting:sell')
+AddEventHandler('lp_hunting:sell', function()
     local xPlayer = ESX.GetPlayerFromId(source)
 
     local MeatPrice    = 400
@@ -41,8 +41,8 @@ AddEventHandler('esx-qalle-hunting:sell', function()
         
 end)
 
-RegisterServerEvent('esx_hunting:spawnPeds')
-AddEventHandler('esx_hunting:spawnPeds', function(positions)
+RegisterServerEvent('lp_hunting:spawnPeds')
+AddEventHandler('lp_hunting:spawnPeds', function(positions)
     local peds = {}
 
     for k, v in pairs(positions) do
@@ -51,11 +51,11 @@ AddEventHandler('esx_hunting:spawnPeds', function(positions)
         table.insert(peds, {id = NetworkGetNetworkIdFromEntity(Animal)})
     end
 
-    TriggerClientEvent('esx_hunting:pedsSpawned', source, peds)
+    TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
 end)
 
-RegisterServerEvent('esx_hunting:deletePeds')
-AddEventHandler('esx_hunting:spawnPeds', function(AnimalPositions)
+RegisterServerEvent('lp_hunting:deletePeds')
+AddEventHandler('lp_hunting:spawnPeds', function(AnimalPositions)
     local peds = {}
 
     for k, v in pairs(AnimalPositions) do
@@ -64,11 +64,11 @@ AddEventHandler('esx_hunting:spawnPeds', function(AnimalPositions)
         table.insert(peds, {id = NetworkGetNetworkIdFromEntity(Animal)})
     end
 
-    TriggerClientEvent('esx_hunting:pedsSpawned', source, peds)
+    TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
 end)
 
-RegisterServerEvent('esx_hunting:removePed')
-AddEventHandler('esx_hunting:removePed', function(AnimalId)
+RegisterServerEvent('lp_hunting:removePed')
+AddEventHandler('lp_hunting:removePed', function(AnimalId)
     DeleteEntity(NetworkGetEntityFromNetworkId(AnimalId))
 end)
 

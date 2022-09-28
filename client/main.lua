@@ -1,3 +1,4 @@
+------------------------------------| Variable Declaration |---------------------------------
 local Keys = {
 	["ESC"] = 322, ["F1"] = 288, ["F2"] = 289, ["F3"] = 170, ["F5"] = 166, ["F6"] = 167, ["F7"] = 168, ["F8"] = 169, ["F9"] = 56, ["F10"] = 57, 
 	["~"] = 243, ["1"] = 157, ["2"] = 158, ["3"] = 160, ["4"] = 164, ["5"] = 165, ["6"] = 159, ["7"] = 161, ["8"] = 162, ["9"] = 163, ["-"] = 84, ["="] = 83, ["BACKSPACE"] = 177, 
@@ -9,29 +10,7 @@ local Keys = {
 	["LEFT"] = 174, ["RIGHT"] = 175, ["TOP"] = 27, ["DOWN"] = 173,
 	["NENTER"] = 201, ["N4"] = 108, ["N5"] = 60, ["N6"] = 107, ["N+"] = 96, ["N-"] = 97, ["N7"] = 117, ["N8"] = 61, ["N9"] = 118
 }
-
-ESX                             = nil
-
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('FIVELIFERPDEZXN4OmdldFNoYXJlZE9iamVjdAZICKZACKHD', function(obj) ESX = obj end)
-		Citizen.Wait(10)
-	end
-
-	ScriptLoaded()
-end)
-
-function ScriptLoaded()
-	Citizen.Wait(1000)
-	LoadMarkers()
-
-	local playerData = ESX.GetPlayerData()
-
-	if playerData.job.name == 'hunter' then
-		LoadMapMarkers()
-	end
-end
-
+ESX = nil
 local AnimalPositions = {
 	{ x=  -1201.4189453125, y = 4763.78515625,   z = 218.20310974121 },
 	{ x = -913.37139892578, y = 4823.1943359375, z = 306.50598144531 },
@@ -43,7 +22,7 @@ local AnimalPositions = {
 }
 
 local AnimalsInSession = {}
-local HuntingAreaRange = 460.0
+
 local Positions = {
 	StartHunting = {
 		blipId = nil,
@@ -63,39 +42,38 @@ local HuntingAreaBlip = nil
 local OnGoingHuntSession = false
 local HuntCar = nil
 local ReceivingServerData = nil
+------------------------------------| Initial ESX |------------------------------------------
+Citizen.CreateThread(function()
+	while ESX == nil do
+		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+		Citizen.Wait(0)
+	end
+	PlayerData = ESX.GetPlayerData()
+	while PlayerData == nil do
+        Citizen.Wait(10)
+    end
+	ScriptLoaded()
 
-RegisterNetEvent('esx:setJob')
-AddEventHandler('esx:setJob', function(job)
-	if job.name == "hunter" then
+end)
+------------------------------------| Usfull Functions |-------------------------------------
+function ScriptLoaded()
+	Citizen.Wait(1000)
+	LoadMarkers()
+
+	local playerData = ESX.GetPlayerData()
+
+	if playerData.job.name == 'hunter' then
 		LoadMapMarkers()
+	end
+end
+-- notification Handler
+function notificationHandler(icon,title,msg,color,sound)
+	if Config.Notification.System ~= 'lp_notify' then
+		ESX.ShowNotification(title..", "..msg)
 	else
-		RemoveMapMarkers()
+		TriggerEvent("lifepeak.notify",icon,title,msg,color,true,Config.Notification.Postion,Config.Notification.displaytime,sound)
 	end
-end)
-
-RegisterNetEvent('esx_outlaw:isPositionWhitelisted')
-AddEventHandler('esx_outlaw:isPositionWhitelisted', function(source, coords, cb)
-	print("Is Player in Hunting Area?")
-	cb(IsPlayerInHuntingArea() and OnGoingHuntSession)
-end)
-
-RegisterNetEvent('esx_hunting:pedsSpawned')
-AddEventHandler('esx_hunting:pedsSpawned', function(PedPositions)
-	for k, v in pairs(PedPositions) do
-		local Animal = NetworkGetEntityFromNetworkId(v.id)
-		TaskWanderStandard(Animal, true, true)
-		SetEntityAsMissionEntity(Animal, true, true)
-
-		local AnimalBlip = AddBlipForEntity(Animal)
-		SetBlipSprite(AnimalBlip, 153)
-		SetBlipColour(AnimalBlip, 1)
-		BeginTextCommandSetBlipName("STRING")
-		AddTextComponentString('Reh')
-		EndTextCommandSetBlipName(AnimalBlip)
-
-		table.insert(AnimalPositions, {id = Animal, Blipid = AnimalBlip})
-	end
-end)
+end
 
 function LoadMapMarkers()
 	Citizen.CreateThread(function()
@@ -131,7 +109,7 @@ function IsPlayerInHuntingArea()
 
 	local distance = GetDistanceBetweenCoords(plyCoords, p.x, p.y, p.z, true)
 
-	return distance <= HuntingAreaRange
+	return distance <= Config.HuntingAreaRange
 end
 
 function LoadMarkers()
@@ -192,7 +170,7 @@ function StartHuntingSession()
 
 		OnGoingHuntSession = false
 
-		RemoveWeaponFromPed(PlayerPedId(), GetHashKey("WEAPON_MUSKET"), true, true)
+		RemoveWeaponFromPed(PlayerPedId(), GetHashKey(Config.HuntingWeapon), true, true)
 		RemoveWeaponFromPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"), true, true)
 
 		RemoveBlip(HuntingAreaBlip)
@@ -202,7 +180,7 @@ function StartHuntingSession()
 		for index, value in pairs(AnimalsInSession) do
 			if DoesEntityExist(value.id) then
 				DeleteEntity(value.id)
-				TriggerServerEvent('esx_hunting:removePed', NetworkGetNetworkIdFromEntity(v.id))
+				TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(v.id))
 			end
 		end
 
@@ -213,20 +191,20 @@ function StartHuntingSession()
 
 		-- HuntCar = CreateVehicle(GetHashKey('blazer'), Positions['SpawnATV'].x, Positions['SpawnATV'].y, Positions['SpawnATV'].z, 169.79, true, false)
 
-		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_MUSKET"),45, true, false)
+		GiveWeaponToPed(PlayerPedId(), GetHashKey(Config.HuntingWeapon),45, true, false)
 		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"),0, true, false)
 
 		-- Animals
 
 		local habs = Positions.StartHunting
-		HuntingAreaBlip = AddBlipForRadius(habs.x, habs.y, habs.z, HuntingAreaRange)
+		HuntingAreaBlip = AddBlipForRadius(habs.x, habs.y, habs.z, Config.HuntingAreaRange)
 		SetBlipHighDetail(HuntingAreaBlip, true)
 		SetBlipColour(HuntingAreaBlip, 75)
 		SetBlipAlpha(HuntingAreaBlip, 60)
 
 		Citizen.CreateThread(function()
 
-			TriggerServerEvent('esx_hunting:spawnPeds', AnimalPositions)
+			TriggerServerEvent('lp_hunting:spawnPeds', AnimalPositions)
 
 			-- wait for the server to create the peds and send them back to the client
 			local spawnFailedTimer 	= 0
@@ -308,14 +286,14 @@ function SlaughterAnimal(AnimalId)
 
 	--ESX.ShowNotification('Du erhältst ' ..AnimalWeight.. 'kg Fleisch')
 
-	TriggerServerEvent('esx-qalle-hunting:reward', AnimalWeight)
-	TriggerServerEvent('esx_hunting:removePed', NetworkGetNetworkIdFromEntity(AnimalId))
+	TriggerServerEvent('lp_hunting:reward', AnimalWeight)
+	TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(AnimalId))
 
 	DeleteEntity(AnimalId)
 end
 
 function SellItems()
-	TriggerServerEvent('esx-qalle-hunting:sell')
+	TriggerServerEvent('lp_hunting:sell')
 end
 
 function LoadAnimDict(dict)
@@ -336,3 +314,38 @@ function DrawM(hint, type, x, y, z)
 	ESX.Game.Utils.DrawText3D({x = x, y = y, z = z + 1.0}, hint, 0.4)
 	DrawMarker(type, x, y, z, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 1.5, 1.5, 1.5, 255, 255, 255, 100, false, true, 2, false, false, false, false)
 end
+
+
+
+RegisterNetEvent('esx:setJob')
+AddEventHandler('esx:setJob', function(job)
+	if job.name == "hunter" then
+		LoadMapMarkers()
+	else
+		RemoveMapMarkers()
+	end
+end)
+
+RegisterNetEvent('esx_outlaw:isPositionWhitelisted')
+AddEventHandler('esx_outlaw:isPositionWhitelisted', function(source, coords, cb)
+	print("Is Player in Hunting Area?")
+	cb(IsPlayerInHuntingArea() and OnGoingHuntSession)
+end)
+
+RegisterNetEvent('lp_hunting:pedsSpawned')
+AddEventHandler('lp_hunting:pedsSpawned', function(PedPositions)
+	for k, v in pairs(PedPositions) do
+		local Animal = NetworkGetEntityFromNetworkId(v.id)
+		TaskWanderStandard(Animal, true, true)
+		SetEntityAsMissionEntity(Animal, true, true)
+
+		local AnimalBlip = AddBlipForEntity(Animal)
+		SetBlipSprite(AnimalBlip, 153)
+		SetBlipColour(AnimalBlip, 1)
+		BeginTextCommandSetBlipName("STRING")
+		AddTextComponentString('Reh')
+		EndTextCommandSetBlipName(AnimalBlip)
+
+		table.insert(AnimalPositions, {id = Animal, Blipid = AnimalBlip})
+	end
+end)
