@@ -1,16 +1,16 @@
--- 
--- Truck Deliveries by SeaLife
---
+-- Resource Metadata
+fx_version 'cerulean'
+games {'gta5'}
+author 'ZickZackHD <ZickZackHD#4834>'
+description 'Hunt animals'
+version '1.0.0'
+name 'lp_hunting'
+url 'https://github.com/zickzackhd'
+lua54 'yes'
 
-name "Truck Deliveries (ESX)"
-
-description "Delivery Goods with a Truck."
-
-author "SeaLife"
-
-version "1.0.0-SNAPSHOT"
-
-url "https://r3ktm8.de"
+shared_script {
+	'config.lua',
+}
 
 client_script {
     "@NativeUI/NativeUI.lua",
@@ -26,18 +26,8 @@ server_script {
     "server/main.lua"
 }
 
-ui_page('assets/index.html')
 
-files({
-	'assets/index.html',
-	'assets/listener.js',
-	'assets/styles.css',
-	'assets/font-face.css',
-	'assets/dynamic.css'
-})
+dependencies {
+	'es_extended'
+}
 
-fx_version 'cerulean'
-
-lua54 'yes'
-
-game "gta5"
