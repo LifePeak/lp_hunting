@@ -1,0 +1,14 @@
+variables:
+  ACCESS_TOKEN: ${ACCESS_TOKEN}
+before_script:
+  - apk update && apk add git
+  - git clone https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/lifepeak/fivem/skripts/fivem_lua_linter.git temp
+  - mv temp/*.* .
+  - mv temp/.luacheckrc.template .
+  - rm -rf temp
+
+include:
+- project: lifepeak/fivem/skripts/fivem_lua_linter
+  ref: main
+  file:
+      - .gitlab-ci.yml
