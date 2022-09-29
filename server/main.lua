@@ -4,7 +4,7 @@ ESX = nil
 TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
 ------------------------------------| Usfull Functions |-------------------------------------
 function GetCoordZ(x, y)
-	local groundCheckHeights = { 40.0, 41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0, 49.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0 }
+	--local groundCheckHeights = { 40.0, 41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0, 49.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0 }
     local groundCheck = 500.0
     local groundCheckmin = -500.0
     for height=groundCheck,groundCheckmin,-0.1 do
@@ -15,7 +15,7 @@ function GetCoordZ(x, y)
     end
     return false
     --[[
-        	for i, height in ipairs(groundCheckHeights) do
+    for i, height in ipairs(groundCheckHeights) do
 		local foundGround, z = GetGroundZFor_3dCoord(x, y, height)
 		if foundGround then
 			return z
@@ -29,16 +29,16 @@ function generateAnimalSpawnLocation(HuntingArea, areaRange)
     local xPlayer = ESX.GetPlayerFromId(source)
     local nearestHuntingAreaCorrd = HuntingArea.coord
     local plyCoords = xPlayer.getCoords(true)
-    local dist = #(plyCoords - nearestHuntingAreaCorrd)	
+    local dist = #(plyCoords - nearestHuntingAreaCorrd)
     if dist < 500 then	-- prevent if map not loaded
 
         math.randomseed(GetGameTimer())
-        local ranX = x+(math.random(-areaRange, areaRange))
+        local ranX = HuntingArea.x+(math.random(-areaRange, areaRange))
 
         Citizen.Wait(100)
 
         math.randomseed(GetGameTimer())
-        local ranY = y+(math.random(-areaRange, areaRange))
+        local ranY = HuntingArea.y+(math.random(-areaRange, areaRange))
 
         local ranZ = GetCoordZ(ranX, ranY)
         if ranZ ~= false then
@@ -106,13 +106,13 @@ AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
                 local spawnLocation = generateAnimalSpawnLocation()
                 if spawnLocation ~= false then
                     local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
-                    table.insert(peds, {id = NetworkGetNetworkIdFromEntity(Animal)})
+                    table.insert(peds, {id = NetworkGetNetworkIdFromEntity(AnimalPed)})
                     if #(peds) < maxAnimalsInHuttingArea then
                         break
                     end
                 end
                
-            end 
+            end
         end
     end
     TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)

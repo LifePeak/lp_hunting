@@ -170,7 +170,7 @@ function LoadMarkers()
 							StartHuntingSession()
 						end
 					end
-				end 
+				end
 			end
 			for index ,value in pairs(Config.Mensions.Sell) do
 				local distance = #(plyCoords-value)
@@ -183,7 +183,7 @@ function LoadMarkers()
 							SellItems()
 						end
 					end
-				end 
+				end
 			end
 			Citizen.Wait(sleep)
 		end
@@ -211,7 +211,7 @@ function getNearestHuntingArea()
 	end
 end
 function StartHuntingSession()
-
+	local plyCoords = GetEntityCoords(PlayerPedId())
 	if OnGoingHuntSession then
 
 		OnGoingHuntSession = false
@@ -226,7 +226,7 @@ function StartHuntingSession()
 		for index, value in pairs(AnimalsInSession) do
 			if DoesEntityExist(value.id) then
 				DeleteEntity(value.id)
-				TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(v.id))
+				TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(value.id))
 			end
 		end
 
@@ -358,7 +358,7 @@ function LoadAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do
         RequestAnimDict(dict)
         Citizen.Wait(10)
-    end    
+    end
 end
 
 function LoadModel(model)
