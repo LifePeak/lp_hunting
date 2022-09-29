@@ -2,8 +2,9 @@ Config = {}
 Config.Locale  = 'de'
 Config.ReqireHuntingJob = false
 Config.HuntingWeapon = "WEAPON_MUSKET"
-
-Config.HunntingAnimals = {
+Config.SpawnJobVehicle = true
+Config.JobVehicle = "blazer"
+Config.Animals = {
     [0] = {
         ['model'] = "a_c_boar",
         ['probability'] = 0.1, --  = 10%

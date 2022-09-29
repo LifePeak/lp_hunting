@@ -134,8 +134,10 @@ function LoadMarkers()
 			print("Loading"..ped.model.."...")
 		end
 	end
-	--LoadModel('blazer')
-	--LoadModel('a_c_deer')
+	-- load Job Vehicle
+	if Config.SpawnJobVehicle == true then
+		LoadModel(Config.JobVehicle)
+	end
 	LoadAnimDict('amb@medic@standing@kneel@base')
 	LoadAnimDict('anim@gangops@facility@servers@bodysearch@')
 
@@ -188,18 +190,26 @@ function LoadMarkers()
 		end
 	end)
 end
+
+
 function getNearestHuntingArea()
 	local plyCoords = GetEntityCoords(PlayerPedId())
 	local nearestHuntingArea = nil
-	for k, v in pairs(Config.HuntingAreaRanges) do
-		for index,vv in ipairs(v) do
-			if nearestHuntingArea == nil then
-				nearestHuntingArea = index
-			end
-			v.coord
+	for index, v in ipairs(Config.HuntingAreaRanges) do
+		if nearestHuntingArea == nil then
+			nearestHuntingArea = index
+		end
+		if 	#(Config.HuntingAreaRanges[index].coord-plyCoords)	<	#(Config.HuntingAreaRanges[nearestHuntingArea].coord-plyCoords) then
+			nearestHuntingArea = index
 		end
 	end
+	if nearestHuntingArea ~= nil then
+		return Config.HuntingAreaRanges[nearestHuntingArea]
 
+	else
+		print("getNearestHuntingArea: nearestHuntingArea is nil")
+		return false
+	end
 end
 function StartHuntingSession()
 
@@ -224,9 +234,11 @@ function StartHuntingSession()
 	else
 		OnGoingHuntSession = true
 
-		-- Car
-
-		-- HuntCar = CreateVehicle(GetHashKey('blazer'), Positions['SpawnATV'].x, Positions['SpawnATV'].y, Positions['SpawnATV'].z, 169.79, true, false)
+		-- SpawnJobVehicle
+		if Config.SpawnJobVehicle == true then
+			HuntCar = CreateVehicle(GetHashKey(Config.JobVehicle), plyCoords.x,plyCoords.y,plyCoords.z, 169.79, true, false)
+		end
+ 
 
 		GiveWeaponToPed(PlayerPedId(), GetHashKey(Config.HuntingWeapon),45, true, false)
 		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"),0, true, false)
@@ -249,15 +261,20 @@ function StartHuntingSession()
 					}
 				}
 			--]]
-		local habs = Positions.StartHunting
-		HuntingAreaBlip = AddBlipForRadius(habs.x, habs.y, habs.z, Config.HuntingAreaRange)
+		
+		local nearestHuntingArea = getNearestHuntingArea()
+		if nearestHuntingArea == false then
+			print("Error while getting nearestHuntingArea: setting to 0")
+			nearestHuntingArea = Config.HuntingAreaRanges[0]
+		end
+		HuntingAreaBlip = AddBlipForRadius(nearestHuntingArea.coord.x, nearestHuntingArea.coord.y, nearestHuntingArea.coord.z, nearestHuntingArea.radius)
 		SetBlipHighDetail(HuntingAreaBlip, true)
 		SetBlipColour(HuntingAreaBlip, 75)
 		SetBlipAlpha(HuntingAreaBlip, 60)
 
 		Citizen.CreateThread(function()
 
-			TriggerServerEvent('lp_hunting:spawnPeds', AnimalPositions)
+			TriggerServerEvent('lp_hunting:spawnPeds', nearestHuntingArea)
 
 			-- wait for the server to create the peds and send them back to the client
 			local spawnFailedTimer 	= 0
@@ -266,24 +283,13 @@ function StartHuntingSession()
 				Citizen.Wait(200)
 			end
 			if spawnFailedTimer >= 10 then
-				ESX.ShowNotification('~r~Es scheinen keine Rehe unterwegs zu sein! Versuche es später erneut.')
+				ESX.ShowNotification('~r~Es scheinen keine Tiere unterwegs zu sein! Versuche es später erneut.')
 				OnGoingHuntSession()
 				return
 			end
 
 			-- start hunting session
 			ESX.ShowNotification('~g~Du hast eine neue Jagdsaison gestartet! Viel Glück!')
-
-				
-			--[[
-			for index, value in pairs(AnimalPositions) do
-				local Animal = CreatePed(5, GetHashKey('a_c_deer'), value.x, value.y, value.z, 0.0, true, true)
-				TaskWanderStandard(Animal, true, true)
-				SetEntityAsMissionEntity(Animal, true, true)
-				--Blips
-				table.insert(AnimalsInSession, {id = Animal, x = value.x, y = value.y, z = value.z, Blipid = AnimalBlip})
-			end
-			]]--
 
 			while OnGoingHuntSession do
 				local sleep = 500
