@@ -25,20 +25,20 @@ function GetCoordZ(x, y)
     --]]
 
 end
-function generateAnimalSpawnLocation(HuntingArea, areaRange)
+function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange)
     local xPlayer = ESX.GetPlayerFromId(source)
-    local nearestHuntingAreaCorrd = HuntingArea.coord
+    print(nearestHuntingAreaCoord)
     local plyCoords = xPlayer.getCoords(true)
-    local dist = #(plyCoords - nearestHuntingAreaCorrd)
+    local dist = #(plyCoords - nearestHuntingAreaCoord)
     if dist < 500 then	-- prevent if map not loaded
 
         math.randomseed(GetGameTimer())
-        local ranX = HuntingArea.x+(math.random(-areaRange, areaRange))
+        local ranX = nearestHuntingAreaCoord.x+(math.random(-areaRange, areaRange))
 
         Citizen.Wait(100)
 
         math.randomseed(GetGameTimer())
-        local ranY = HuntingArea.y+(math.random(-areaRange, areaRange))
+        local ranY = nearestHuntingAreaCoord.y+(math.random(-areaRange, areaRange))
 
         local ranZ = GetCoordZ(ranX, ranY)
         if ranZ ~= false then
@@ -103,7 +103,7 @@ AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
             local animal = Config.Animals[index]
             local spawnprobability = animal.probability
             if spawnprobability >= math.random() then
-                local spawnLocation = generateAnimalSpawnLocation()
+                local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius)
                 if spawnLocation ~= false then
                     local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
                     table.insert(peds, {id = NetworkGetNetworkIdFromEntity(AnimalPed)})
@@ -114,6 +114,7 @@ AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
                
             end
         end
+    Citizen.Wait(10) 
     end
     TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
 end)
