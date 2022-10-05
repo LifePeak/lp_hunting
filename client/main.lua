@@ -22,7 +22,7 @@ local AnimalPositions = {
 }
 
 local AnimalsInSession = {}
-
+--[[
 local Positions = {
 	StartHunting = {
 		blipId = nil,
@@ -38,6 +38,7 @@ local Positions = {
 		x = 0, y = 0, z = 0
 	}
 }
+--]]
 local Blips = {}
 local HuntingAreaBlip = nil
 local OnGoingHuntSession = false
@@ -90,7 +91,7 @@ function LoadMapMarkers()
 			BeginTextCommandSetBlipName("STRING")
 			AddTextComponentString(label)
 			EndTextCommandSetBlipName(blip)
-			table.insert(Blips,Blip)
+			table.insert(Blips,blip)
 		end
 		for index, v in pairs(Config.Mensions.Sell) do
 			local label = "Wildhandel"
@@ -102,7 +103,7 @@ function LoadMapMarkers()
 			BeginTextCommandSetBlipName("STRING")
 			AddTextComponentString(label)
 			EndTextCommandSetBlipName(blip)
-			table.insert(Blips,Blip)
+			table.insert(Blips,blip)
 		end
 	end)
 end
@@ -112,8 +113,7 @@ function RemoveMapMarkers()
 		for index, v in pairs(Blips) do
 			if index ~= 'SpawnATV' then
 				RemoveBlip(v)
-				v = nil
-				talbe.remove(Blips,index)
+				table.remove(Blips,index)
 			end
 		end
 	end)

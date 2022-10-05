@@ -114,7 +114,7 @@ AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
                
             end
         end
-    Citizen.Wait(10) 
+    Citizen.Wait(10)
     end
     TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
 end)
