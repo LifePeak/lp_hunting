@@ -38,6 +38,7 @@ local Positions = {
 		x = 0, y = 0, z = 0
 	}
 }
+local Blips = {}
 local HuntingAreaBlip = nil
 local OnGoingHuntSession = false
 local HuntCar = nil
@@ -79,33 +80,40 @@ end
 
 function LoadMapMarkers()
 	Citizen.CreateThread(function()
-		for index, v in pairs(Config.Mensions) do
-			local label = nil
-			if index == "StartHunting" then
-				label = "Jagdgrund"
-			end
-			if index == "Sell" then
-				label = "Wildhandel"
-			end
-			v.blipId = v.blipId or AddBlipForCoord(v.x, v.y, v.z)
-			SetBlipSprite(v.blipId, v.sprite)
-			SetBlipColour(v.blipId, 75)
-			SetBlipScale(v.blipId, 0.7)
-			SetBlipAsShortRange(v.blipId, true)
+		for index, v in pairs(Config.Mensions.StartHunting) do
+			local label = "Jagdgrund"
+			local blip = AddBlipForCoord(v.x, v.y, v.z)
+			SetBlipSprite(blip, 442)
+			SetBlipColour(blip, 75)
+			SetBlipScale(blip, 0.7)
+			SetBlipAsShortRange(blip, true)
 			BeginTextCommandSetBlipName("STRING")
 			AddTextComponentString(label)
-			EndTextCommandSetBlipName(v.blipId)
-			
+			EndTextCommandSetBlipName(blip)
+			table.insert(Blips,Blip)
+		end
+		for index, v in pairs(Config.Mensions.Sell) do
+			local label = "Wildhandel"
+			local blip = AddBlipForCoord(v.x, v.y, v.z)
+			SetBlipSprite(blip, v.sprite)
+			SetBlipColour(blip, 467)
+			SetBlipScale(blip, 0.7)
+			SetBlipAsShortRange(blip, true)
+			BeginTextCommandSetBlipName("STRING")
+			AddTextComponentString(label)
+			EndTextCommandSetBlipName(blip)
+			table.insert(Blips,Blip)
 		end
 	end)
 end
 
 function RemoveMapMarkers()
 	Citizen.CreateThread(function()
-		for index, v in pairs(Positions) do
+		for index, v in pairs(Blips) do
 			if index ~= 'SpawnATV' then
-				RemoveBlip(v.blipId)
-				v.blipId = nil
+				RemoveBlip(v)
+				v = nil
+				talbe.remove(Blips,index)
 			end
 		end
 	end)
@@ -126,7 +134,7 @@ function IsPlayerInHuntingArea()
 end
 
 function LoadMarkers()
-	for _, ped in pairs(Config.HunntingAnimals) do
+	for _, ped in pairs(Config.Animals) do
 		LoadModel(ped.model)
 		while not HasModelLoaded(ped.model) do
 			Citizen.Wait(100)
@@ -202,6 +210,7 @@ function getNearestHuntingArea()
 			nearestHuntingArea = index
 		end
 	end
+	print(Config.HuntingAreaRanges[nearestHuntingArea].coord)
 	if nearestHuntingArea ~= nil then
 		return Config.HuntingAreaRanges[nearestHuntingArea]
 
