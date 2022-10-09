@@ -52,7 +52,6 @@ function notificationHandler(icon,title,msg,color,sound)
 	end
 end
 --]]
-
 function LoadMapMarkers()
 	Citizen.CreateThread(function()
 		for index, v in pairs(Config.Mensions.StartHunting) do
