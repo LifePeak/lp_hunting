@@ -272,10 +272,9 @@ function StartHuntingSession()
 		local nearestHuntingArea = getNearestHuntingArea()
 
 		if nearestHuntingArea == false then
-			print("Error while getting nearestHuntingArea: setting to 0")
-			nearestHuntingArea = Config.HuntingAreaRanges[0]
+			print("Error while getting nearestHuntingArea: setting to 1")
+			nearestHuntingArea = Config.HuntingAreaRanges[1]
 		end
-	
 		HuntingAreaBlip = AddBlipForRadius(nearestHuntingArea.coord, nearestHuntingArea.radius)
 		SetBlipHighDetail(HuntingAreaBlip, true)
 		SetBlipColour(HuntingAreaBlip, 75)
@@ -308,8 +307,9 @@ function StartHuntingSession()
 							-- Animal is Out of Hunting Range
 							DeleteEntity(AnimalId)
 							table.remove(AnimalsInSession, index)
-							print("Animal is out of range...")
-							print(index)
+							TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(value.id))
+							TriggerServerEvent('lp_hunting:respawnPed',nearestHuntingArea, AnimalsInSession)
+
 						end
 						local PlyCoords = GetEntityCoords(PlayerPedId())
 						local AnimalHealth = GetEntityHealth(value.id)
@@ -358,11 +358,11 @@ function SlaughterAnimal(AnimalId)
 
 	ClearPedTasksImmediately(PlayerPedId())
 
-	local AnimalWeight = math.random(10, 160) / 10
+	
 
 	--ESX.ShowNotification('Du erhältst ' ..AnimalWeight.. 'kg Fleisch')
 
-	TriggerServerEvent('lp_hunting:reward', AnimalWeight)
+	TriggerServerEvent('lp_hunting:reward', AnimalId)
 	TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(AnimalId))
 
 	DeleteEntity(AnimalId)
@@ -414,28 +414,30 @@ end)
 
 RegisterNetEvent('esx_outlaw:isPositionWhitelisted')
 AddEventHandler('esx_outlaw:isPositionWhitelisted', function(source, coords, cb)
-	print("Is Player in Hunting Area?")
 	cb(IsPlayerInHuntingArea() and OnGoingHuntSession)
 end)
 
 RegisterNetEvent('lp_hunting:pedsSpawned')
 AddEventHandler('lp_hunting:pedsSpawned', function(peds)
-	print("Peds reseved")
-	print(json.encode(peds))
 	for k, v in pairs(peds) do
-		local Animal = NetworkGetEntityFromNetworkId(v.id)
-		print(Animal)
-		TaskWanderStandard(Animal, true, true)
-		SetEntityAsMissionEntity(Animal, true, true)
-		local AnimalBlip = AddBlipForEntity(Animal)
-		SetBlipSprite(AnimalBlip, 153)
-		SetBlipColour(AnimalBlip, 1)
-		BeginTextCommandSetBlipName("STRING")
-		AddTextComponentString('Wild')
-		EndTextCommandSetBlipName(AnimalBlip)
-		table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+		--if v.Blipid == nil then -- if Blipid is set the ped is alrady in the list
+			local Animal = NetworkGetEntityFromNetworkId(v.id)
+			if Animal == 0 then
+				print("Error while getting Animals plase restart your game")
+			else
+				TaskWanderStandard(Animal, true, true)
+				SetEntityAsMissionEntity(Animal, true, true)
+				local AnimalBlip = AddBlipForEntity(Animal)
+				SetBlipSprite(AnimalBlip, 153)
+				SetBlipColour(AnimalBlip, 1)
+				BeginTextCommandSetBlipName("STRING")
+				AddTextComponentString('Wild')
+				EndTextCommandSetBlipName(AnimalBlip)
+				table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+			end
+			
+		--end
 	end
-	print("Peds Blips loaded")
 end)
 
 RegisterNetEvent('lp_hunting:client:calculateZCordinate')

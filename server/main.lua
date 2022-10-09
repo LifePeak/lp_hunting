@@ -1,6 +1,7 @@
 ------------------------------------| Variable Declaration |---------------------------------
 ESX = nil
 local msgpipe = {} -- in need this pipe sync msg's from server to client and client to server [source] = msg
+local animals = {} -- lets save all Enentys to delete them on skript restart
 ------------------------------------| Initial ESX |------------------------------------------
 TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
 ------------------------------------| Usfull Functions |-------------------------------------
@@ -20,8 +21,6 @@ function GetCoordZ(x, y, src)
     end
     
     local tmp_msg = msgpipe[src]
-    print("Printing Msg pipe:")
-    print(tmp_msg)
     msgpipe[src] = nil -- resetting msg pipe
     return tmp_msg
 end
@@ -52,21 +51,55 @@ function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange,src)
     end
 	
 end
+
+function spawnAnimals(nearestHuntingArea,peds,src)
+    if nearestHuntingArea == nil or peds == nil or src == nil then
+        print("spawnAnimals: nearestHuntingArea, peds, src is nil")
+        return false
+    end
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local maxAnimalsInHuttingArea = nearestHuntingArea.radius*0.1
+    while #(peds) < maxAnimalsInHuttingArea do
+        for index,v in ipairs(Config.Animals) do
+            local animal = Config.Animals[index]
+            local spawnprobability = animal.probability
+            if spawnprobability >= math.random() then
+                local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius,src)
+                if spawnLocation ~= false then
+                    local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
+                    local AnimalNetId = NetworkGetNetworkIdFromEntity(AnimalPed)
+                    table.insert(peds, {id = AnimalNetId})
+                    table.insert(animals, {id = AnimalNetId})
+                    if #(peds) < maxAnimalsInHuttingArea then
+                        break
+                    end
+                end
+               
+            end
+        end
+        Citizen.Wait(10)
+        --print("Spawning Animal...")
+        --print(#peds-maxAnimalsInHuttingArea)
+    end
+    xPlayer.triggerEvent("lp_hunting:pedsSpawned",peds)
+end
 ------------------------------------| Register Net Events |-------------------------------------
 RegisterServerEvent('lp_hunting:reward')
-AddEventHandler('lp_hunting:reward', function(Weight)
+AddEventHandler('lp_hunting:reward', function(Animal)
     local xPlayer = ESX.GetPlayerFromId(source)
-
-    if Weight >= 1 then
-        xPlayer.addInventoryItem('meat', 1)
-    elseif Weight >= 9 then
-        xPlayer.addInventoryItem('meat', 2)
-    elseif Weight >= 15 then
-        xPlayer.addInventoryItem('meat', 3)
+    local animalHash = GetEntityModel(Animal)
+    if animalHash == nil or animalHash == false then
+        print("Error in lp_hunting:reward: cant get animalHash")
     end
-
-    xPlayer.addInventoryItem('leather', math.random(1, 4))
-        
+    for k,v in pairs(Config.Animals) do
+        if GetHashKey(v.model) == animalHash then
+            for kk,vv in pairs(v.looting) do
+                local itemAmmount math.random(1, vv)
+                xPlayer.addInventoryItem(kk, itemAmmount)
+            end
+        end
+    end
+    print("Error Animal not found!")
 end)
 
 RegisterServerEvent('lp_hunting:sell')
@@ -92,34 +125,15 @@ AddEventHandler('lp_hunting:sell', function()
         
 end)
 
+-- Respawn Peds is unsed if an Animal run out of Range then a new gets spawnd in the aria
+RegisterServerEvent('lp_hunting:respawnPed')
+AddEventHandler('lp_hunting:respawnPed', function(nearestHuntingArea,peds)
+    spawnAnimals(nearestHuntingArea,peds,source)
+end)
 
 RegisterServerEvent('lp_hunting:spawnPeds')
 AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
-    local src = source
-    local peds = {}
-    local xPlayer = ESX.GetPlayerFromId(src)
-    local maxAnimalsInHuttingArea = nearestHuntingArea.radius*0.1
-    while #(peds) < maxAnimalsInHuttingArea do
-        for index,v in ipairs(Config.Animals) do
-            local animal = Config.Animals[index]
-            local spawnprobability = animal.probability
-            if spawnprobability >= math.random() then
-                local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius,src)
-                if spawnLocation ~= false then
-                    local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
-                    table.insert(peds, {id = NetworkGetNetworkIdFromEntity(AnimalPed)})
-                    if #(peds) < maxAnimalsInHuttingArea then
-                        break
-                    end
-                end
-               
-            end
-        end
-    Citizen.Wait(1)
-    print("Waiting for spawning peds..")
-    end
-    print("Send Animals BackToPlayer")
-    xPlayer.triggerEvent("lp_hunting:pedsSpawned",peds)
+    spawnAnimals(nearestHuntingArea,{},source)
 end)
 
 
@@ -132,4 +146,19 @@ end)
 RegisterServerEvent('lp_hunting:removePed')
 AddEventHandler('lp_hunting:removePed', function(AnimalId)
     DeleteEntity(NetworkGetEntityFromNetworkId(AnimalId))
+end)
+
+AddEventHandler('onResourceStarting', function(resourceName)
+    if (GetCurrentResourceName() ~= resourceName) then
+        return
+    end
+    for index,v in ipairs(animals) do
+        local Animal = NetworkGetEntityFromNetworkId(v.id)
+        if DoesEntityExist(Animal) then
+            DeleteEntity(Animal)
+            table.remove(animals,index)
+        end
+
+    end
+
 end)
