@@ -1,33 +1,32 @@
 ------------------------------------| Variable Declaration |---------------------------------
 ESX = nil
+local msgpipe = {} -- in need this pipe sync msg's from server to client and client to server [source] = msg
 ------------------------------------| Initial ESX |------------------------------------------
 TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
 ------------------------------------| Usfull Functions |-------------------------------------
-function GetCoordZ(x, y)
-	--local groundCheckHeights = { 40.0, 41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0, 49.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0 }
-    local groundCheck = 500.0
-    local groundCheckmin = -500.0
-    for height=groundCheck,groundCheckmin,-0.1 do
-        local foundGround, z = GetGroundZFor_3dCoord(x, y, height)
-        if foundGround then
-			return z
-		end
+function GetCoordZ(x, y, src)
+    if x == nil or y == nil or src == nil then
+        print("GetCoordZ: x,y,z or src is nil")
+        return false
     end
-    return false
-    --[[
-    for i, height in ipairs(groundCheckHeights) do
-		local foundGround, z = GetGroundZFor_3dCoord(x, y, height)
-		if foundGround then
-			return z
-		end
-	end
-	return nil
-    --]]
-
+    local xPlayer = ESX.GetPlayerFromId(src)
+    xPlayer.triggerEvent("lp_hunting:client:calculateZCordinate",x,y)
+    while msgpipe[src] == nil do -- waiting for client msg to arive
+        Citizen.Wait(1)
+    end
+    if msgpipe[source] == false then
+        print("Error while calculating Z Cordinate")
+        return false
+    end
+    
+    local tmp_msg = msgpipe[src]
+    print("Printing Msg pipe:")
+    print(tmp_msg)
+    msgpipe[src] = nil -- resetting msg pipe
+    return tmp_msg
 end
-function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange)
-    local xPlayer = ESX.GetPlayerFromId(source)
-    print(nearestHuntingAreaCoord)
+function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange,src)
+    local xPlayer = ESX.GetPlayerFromId(src)
     local plyCoords = xPlayer.getCoords(true)
     local dist = #(plyCoords - nearestHuntingAreaCoord)
     if dist < 500 then	-- prevent if map not loaded
@@ -40,7 +39,7 @@ function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange)
         math.randomseed(GetGameTimer())
         local ranY = nearestHuntingAreaCoord.y+(math.random(-areaRange, areaRange))
 
-        local ranZ = GetCoordZ(ranX, ranY)
+        local ranZ = GetCoordZ(ranX, ranY,src)
         if ranZ ~= false then
             return vector3(ranX,ranY,ranZ)
         else
@@ -96,14 +95,16 @@ end)
 
 RegisterServerEvent('lp_hunting:spawnPeds')
 AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
+    local src = source
     local peds = {}
+    local xPlayer = ESX.GetPlayerFromId(src)
     local maxAnimalsInHuttingArea = nearestHuntingArea.radius*0.1
     while #(peds) < maxAnimalsInHuttingArea do
         for index,v in ipairs(Config.Animals) do
             local animal = Config.Animals[index]
             local spawnprobability = animal.probability
             if spawnprobability >= math.random() then
-                local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius)
+                local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius,src)
                 if spawnLocation ~= false then
                     local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
                     table.insert(peds, {id = NetworkGetNetworkIdFromEntity(AnimalPed)})
@@ -114,25 +115,19 @@ AddEventHandler('lp_hunting:spawnPeds', function(nearestHuntingArea)
                
             end
         end
-    Citizen.Wait(10)
+    Citizen.Wait(1)
+    print("Waiting for spawning peds..")
     end
-    TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
+    print("Send Animals BackToPlayer")
+    xPlayer.triggerEvent("lp_hunting:pedsSpawned",peds)
 end)
 
---[[
-RegisterServerEvent('lp_hunting:deletePeds')
-AddEventHandler('lp_hunting:spawnPeds', function(AnimalPositions)
-    local peds = {}
 
-    for k, v in pairs(AnimalPositions) do
-        local Animal = CreatePed(5, GetHashKey('a_c_deer'), v.x, v.y, v.z, 0.0, true, true)
-
-        table.insert(peds, {id = NetworkGetNetworkIdFromEntity(Animal)})
-    end
-
-    TriggerClientEvent('lp_hunting:pedsSpawned', source, peds)
+RegisterServerEvent('lp_hunting:server:sendcalculatedZCordinate')
+AddEventHandler('lp_hunting:server:sendcalculatedZCordinate', function(z)
+    msgpipe[source] = z -- set msg into the rigt msg pipe
 end)
---]]
+
 
 RegisterServerEvent('lp_hunting:removePed')
 AddEventHandler('lp_hunting:removePed', function(AnimalId)

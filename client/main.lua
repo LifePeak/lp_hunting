@@ -121,15 +121,16 @@ end
 
 function IsPlayerInHuntingArea()
 	local plyCoords = GetEntityCoords(PlayerPedId())
-	for k,v in pairs(Config.HuntingAreaRanges) do
-		local huntingArea = v.coord
-		local distance = #(plyCoords.xy-huntingArea.xy)
-		if distance >= v.radius then
+	local huntingArea = getNearestHuntingArea()
+	if huntingArea ~= false and plyCoords ~= nil then
+		local distance = #(plyCoords.xy-huntingArea.coord.xy)
+		if distance <= huntingArea.radius then
 			return true
 		end
-
+	else
+		return false
 	end
-	return false
+
 	--local distance = GetDistanceBetweenCoords(plyCoords, p.x, p.y, p.z, true)
 end
 
@@ -210,7 +211,6 @@ function getNearestHuntingArea()
 			nearestHuntingArea = index
 		end
 	end
-	print(Config.HuntingAreaRanges[nearestHuntingArea].coord)
 	if nearestHuntingArea ~= nil then
 		return Config.HuntingAreaRanges[nearestHuntingArea]
 
@@ -250,7 +250,6 @@ function StartHuntingSession()
 
 		GiveWeaponToPed(PlayerPedId(), GetHashKey(Config.HuntingWeapon),45, true, false)
 		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"),0, true, false)
-
 		-- Animals
 		--[[
 				local Positions = {
@@ -271,26 +270,27 @@ function StartHuntingSession()
 			--]]
 		
 		local nearestHuntingArea = getNearestHuntingArea()
+
 		if nearestHuntingArea == false then
 			print("Error while getting nearestHuntingArea: setting to 0")
 			nearestHuntingArea = Config.HuntingAreaRanges[0]
 		end
-		HuntingAreaBlip = AddBlipForRadius(nearestHuntingArea.coord.x, nearestHuntingArea.coord.y, nearestHuntingArea.coord.z, nearestHuntingArea.radius)
+	
+		HuntingAreaBlip = AddBlipForRadius(nearestHuntingArea.coord, nearestHuntingArea.radius)
 		SetBlipHighDetail(HuntingAreaBlip, true)
 		SetBlipColour(HuntingAreaBlip, 75)
 		SetBlipAlpha(HuntingAreaBlip, 60)
-
 		Citizen.CreateThread(function()
 
 			TriggerServerEvent('lp_hunting:spawnPeds', nearestHuntingArea)
 
 			-- wait for the server to create the peds and send them back to the client
 			local spawnFailedTimer 	= 0
-			while #AnimalPositions == 0 and spawnFailedTimer <= 10 do
+			while #AnimalsInSession == 0 and spawnFailedTimer <= 50 do
 				spawnFailedTimer = spawnFailedTimer + 1
 				Citizen.Wait(200)
 			end
-			if spawnFailedTimer >= 10 then
+			if spawnFailedTimer >= 50 then
 				ESX.ShowNotification('~r~Es scheinen keine Tiere unterwegs zu sein! Versuche es später erneut.')
 				OnGoingHuntSession()
 				return
@@ -304,6 +304,13 @@ function StartHuntingSession()
 				for index, value in ipairs(AnimalsInSession) do
 					if DoesEntityExist(value.id) then
 						local AnimalCoords = GetEntityCoords(value.id)
+						if #(AnimalCoords.xy-nearestHuntingArea.coord.xy) >= nearestHuntingArea.radius then
+							-- Animal is Out of Hunting Range
+							DeleteEntity(AnimalId)
+							table.remove(AnimalsInSession, index)
+							print("Animal is out of range...")
+							print(index)
+						end
 						local PlyCoords = GetEntityCoords(PlayerPedId())
 						local AnimalHealth = GetEntityHealth(value.id)
 						
@@ -339,7 +346,9 @@ function StartHuntingSession()
 		end)
 	end
 end
-
+function DrawHunntingZone()
+	DrawM("",x,y,z)
+end
 function SlaughterAnimal(AnimalId)
 
 	TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base" ,"base" ,8.0, -8.0, -1, 1, 0, false, false, false )
@@ -359,6 +368,16 @@ function SlaughterAnimal(AnimalId)
 	DeleteEntity(AnimalId)
 end
 
+function GetCoordZ(x, y)
+	local maxHeight = 1000 
+	for height=1,maxHeight do
+		local foundGround, z = GetGroundZFor_3dCoord_2(x, y, height+0.0,false)
+		if foundGround then
+			return z
+		end
+	end
+	return false
+end
 function SellItems()
 	TriggerServerEvent('lp_hunting:sell')
 end
@@ -400,19 +419,26 @@ AddEventHandler('esx_outlaw:isPositionWhitelisted', function(source, coords, cb)
 end)
 
 RegisterNetEvent('lp_hunting:pedsSpawned')
-AddEventHandler('lp_hunting:pedsSpawned', function(PedPositions)
-	for k, v in pairs(PedPositions) do
+AddEventHandler('lp_hunting:pedsSpawned', function(peds)
+	print("Peds reseved")
+	print(json.encode(peds))
+	for k, v in pairs(peds) do
 		local Animal = NetworkGetEntityFromNetworkId(v.id)
+		print(Animal)
 		TaskWanderStandard(Animal, true, true)
 		SetEntityAsMissionEntity(Animal, true, true)
-
 		local AnimalBlip = AddBlipForEntity(Animal)
 		SetBlipSprite(AnimalBlip, 153)
 		SetBlipColour(AnimalBlip, 1)
 		BeginTextCommandSetBlipName("STRING")
-		AddTextComponentString('Reh')
+		AddTextComponentString('Wild')
 		EndTextCommandSetBlipName(AnimalBlip)
-
-		table.insert(AnimalPositions, {id = Animal, Blipid = AnimalBlip})
+		table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
 	end
+	print("Peds Blips loaded")
+end)
+
+RegisterNetEvent('lp_hunting:client:calculateZCordinate')
+AddEventHandler('lp_hunting:client:calculateZCordinate', function(x,y)
+	TriggerServerEvent("lp_hunting:server:sendcalculatedZCordinate",GetCoordZ(x,y))
 end)
