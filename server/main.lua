@@ -94,7 +94,7 @@ AddEventHandler('lp_hunting:reward', function(Animal)
     for k,v in pairs(Config.Animals) do
         if GetHashKey(v.model) == animalHash then
             for kk,vv in pairs(v.looting) do
-                local itemAmmount math.random(1, vv)
+                local itemAmmount =  math.random(1, vv)
                 xPlayer.addInventoryItem(kk, itemAmmount)
             end
         end

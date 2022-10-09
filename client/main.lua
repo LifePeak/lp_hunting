@@ -11,34 +11,6 @@ local Keys = {
 	["NENTER"] = 201, ["N4"] = 108, ["N5"] = 60, ["N6"] = 107, ["N+"] = 96, ["N-"] = 97, ["N7"] = 117, ["N8"] = 61, ["N9"] = 118
 }
 ESX = nil
-local AnimalPositions = {
-	{ x=  -1201.4189453125, y = 4763.78515625,   z = 218.20310974121 },
-	{ x = -913.37139892578, y = 4823.1943359375, z = 306.50598144531 },
-	{ x = -1164.68, y = 4806.76, z = 223.11 },
-	{ x = -1410.63, y = 4730.94, z = 44.0369 },
-	{ x = -1377.29, y = 4864.31, z = 134.162 },
-	{ x = -1259.99, y = 5002.75, z = 151.36 },
-	{ x = -960.91, y = 5001.16, z = 183.0 },
-}
-
-local AnimalsInSession = {}
---[[
-local Positions = {
-	StartHunting = {
-		blipId = nil,
-		hint = "[E] Jagd starten", sprite = 442, label = "Jagdgrund",
-		x = -1058.8522949219, y = 4915.3295898438, z = 211.81875610352
-	},
-	Sell = {
-		blipId = nil,
-		hint = "[E] Verkaufen", sprite = 467, label = "Wildhandel",
-		x = 949.26916503906, y = -2102.3935546875, z = 30.675149917603
-	},
-	SpawnATV = {
-		x = 0, y = 0, z = 0
-	}
-}
---]]
 local Blips = {}
 local HuntingAreaBlip = nil
 local OnGoingHuntSession = false
@@ -71,6 +43,7 @@ function ScriptLoaded()
 	end
 end
 -- notification Handler
+--[[
 function notificationHandler(icon,title,msg,color,sound)
 	if Config.Notification.System ~= 'lp_notify' then
 		ESX.ShowNotification(title..", "..msg)
@@ -78,6 +51,7 @@ function notificationHandler(icon,title,msg,color,sound)
 		TriggerEvent("lifepeak.notify",icon,title,msg,color,true,Config.Notification.Postion,Config.Notification.displaytime,sound)
 	end
 end
+--]]
 
 function LoadMapMarkers()
 	Citizen.CreateThread(function()
@@ -250,25 +224,6 @@ function StartHuntingSession()
 
 		GiveWeaponToPed(PlayerPedId(), GetHashKey(Config.HuntingWeapon),45, true, false)
 		GiveWeaponToPed(PlayerPedId(), GetHashKey("WEAPON_KNIFE"),0, true, false)
-		-- Animals
-		--[[
-				local Positions = {
-					StartHunting = {
-						blipId = nil,
-						hint = "[E] Jagd starten", sprite = 442, label = "Jagdgrund",
-						x = -1058.8522949219, y = 4915.3295898438, z = 211.81875610352
-					},
-					Sell = {
-						blipId = nil,
-						hint = "[E] Verkaufen", sprite = 467, label = "Wildhandel",
-						x = 949.26916503906, y = -2102.3935546875, z = 30.675149917603
-					},
-					SpawnATV = {
-						x = 0, y = 0, z = 0
-					}
-				}
-			--]]
-		
 		local nearestHuntingArea = getNearestHuntingArea()
 
 		if nearestHuntingArea == false then
@@ -305,7 +260,6 @@ function StartHuntingSession()
 						local AnimalCoords = GetEntityCoords(value.id)
 						if #(AnimalCoords.xy-nearestHuntingArea.coord.xy) >= nearestHuntingArea.radius then
 							-- Animal is Out of Hunting Range
-							DeleteEntity(AnimalId)
 							table.remove(AnimalsInSession, index)
 							TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(value.id))
 							TriggerServerEvent('lp_hunting:respawnPed',nearestHuntingArea, AnimalsInSession)
@@ -346,9 +300,7 @@ function StartHuntingSession()
 		end)
 	end
 end
-function DrawHunntingZone()
-	DrawM("",x,y,z)
-end
+
 function SlaughterAnimal(AnimalId)
 
 	TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base" ,"base" ,8.0, -8.0, -1, 1, 0, false, false, false )
