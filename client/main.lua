@@ -15,6 +15,7 @@ local Blips = {}
 local HuntingAreaBlip = nil
 local OnGoingHuntSession = false
 local HuntCar = nil
+local AnimalsInSession = {}
 ------------------------------------| Initial ESX |------------------------------------------
 Citizen.CreateThread(function()
 	while ESX == nil do
@@ -320,7 +321,7 @@ function SlaughterAnimal(AnimalId)
 end
 
 function GetCoordZ(x, y)
-	local maxHeight = 1000 
+	local maxHeight = 1000
 	for height=1,maxHeight do
 		local foundGround, z = GetGroundZFor_3dCoord_2(x, y, height+0.0,false)
 		if foundGround then
