@@ -56,6 +56,10 @@ Config.Animals = {
    [7] = {
     ['model'] = "a_c_rabbit_01",
     ['probability'] = 0.3, --  = 30%
+    ['loot'] = {
+        meat=1,  -- maximum item number
+        leather=3, -- maximum item number
+    }
    }
 }
     --[[ ### DEBUG RANGE 
