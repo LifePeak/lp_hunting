@@ -135,7 +135,7 @@ Working with lp_notify. :) https://scripts.lifepeak.de/package/5124963
 ### Installation
 0. Check Requirements
       - [ ] es_extended
-1. Download the Script at the [Lifepeak-Gitlab](https://gitlab.lifepeak.de/lifepeak-freescripts/lp_hunting)
+1. Download the Script at the Tebex [Lifepeak-Tebex](https://scripts.lifepeak.de/)
 2. Customize the config
 ```lua
     Config = {}
