@@ -1,9 +1,12 @@
 ------------------------------------| Variable Declaration |---------------------------------
-ESX = nil
 local msgpipe = {} -- in need this pipe sync msg's from server to client and client to server [source] = msg
 local animals = {} -- lets save all Enentys to delete them on skript restart
 ------------------------------------| Initial ESX |------------------------------------------
-TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
+
+if Config.UseOldESX then
+	ESX = nil
+    TriggerEvent("esx:getSharedObject",function(obj) ESX = obj end)
+end
 ------------------------------------| Usfull Functions |-------------------------------------
 function GetCoordZ(x, y, src)
     if x == nil or y == nil or src == nil then

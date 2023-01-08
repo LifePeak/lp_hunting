@@ -4,6 +4,7 @@ Config.ReqireHuntingJob = false
 Config.HuntingWeapon = "WEAPON_MUSKET"
 Config.SpawnJobVehicle = false
 Config.JobVehicle = "blazer"
+Config.UseOldESX = false
 Config.Animals = {
     [1] = {
         ['model'] = "a_c_boar",
