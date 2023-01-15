@@ -47,7 +47,7 @@ Config.Animals = {
     }
    },
    [6] = {
-    ['model'] = "a_c_pig",
+    ['model'] = "a_c_pig"   ,
     ['probability'] = 0.3, --  = 30%
     ['loot'] = {
         meat=5,  -- maximum item number
@@ -63,20 +63,10 @@ Config.Animals = {
     }
    }
 }
-    --[[ ### DEBUG RANGE 
-    [1] = {
-        ["coord"]= vector3(-1058.492310, 4899.758301, 211.864502),
-        ["radius"] = 60.0
-    },
-    --]]
 Config.HuntingAreaRanges = {
     [1] = {
         ["coord"]= vector3(-1058.492310, 4899.758301, 211.864502),
-        ["radius"] = 25.0
-    },
-    [2] = {
-        ["coord"]= vector3(1,1,1),
-        ["radius"] = 460
+        ["radius"] = 150.0
     }
 }
 Config.Mensions = {
@@ -89,7 +79,7 @@ Config.Mensions = {
 }
 
 Config.Notification = {}
-Config.Notification.System = 'lp_notify' -- none / lp_notify
+Config.Notification.System = 'lp_notify' -- none / lp_notify -- not finished implemented jet
 Config.Notification.displaytime = 1300 --ms
 Config.Notification.Postion = "top right" -- Only works lp_notify! | lp_"top right", [top Left, top Right, bottom Left, bottom Right}
 

@@ -137,7 +137,7 @@ function LoadMarkers()
 
 
 			if OnGoingHuntSession and not IsPlayerInHuntingArea() then
-				ESX.ShowNotification('~r~Deine Jagdsitzung wurde beendet! Du bist zuweit vom Jagdgebiet weg.')
+				ESX.ShowNotification(_U('out_of_hunnting_range'))
 				StartHuntingSession()
 			end
 			
@@ -145,10 +145,10 @@ function LoadMarkers()
 			for index ,value in pairs(Config.Mensions.StartHunting) do
 				local hint
 				if OnGoingHuntSession then
-					hint = '[E] Jagd beenden'
+					hint = _U('menu_stop_hunnting')
 				end
 				if not OnGoingHuntSession then
-					hint = '[E] Jagd starten'
+					hint = _U('menu_start_hunnting')
 				end
 				local distance = #(plyCoords-value)
 				if distance < 5.0 then
@@ -251,13 +251,13 @@ function StartHuntingSession()
 				Citizen.Wait(200)
 			end
 			if spawnFailedTimer >= 50 then
-				ESX.ShowNotification('~r~Es scheinen keine Tiere unterwegs zu sein! Versuche es später erneut.')
+				ESX.ShowNotification(_U('no_animal_in_range'))
 				OnGoingHuntSession()
 				return
 			end
 
 			-- start hunting session
-			ESX.ShowNotification('~g~Du hast eine neue Jagdsaison gestartet! Viel Glück!')
+			ESX.ShowNotification(_U('start_hunnting'))
 
 			while OnGoingHuntSession do
 				local sleep = 500
@@ -281,7 +281,7 @@ function StartHuntingSession()
 							if PlyToAnimal < 2.0 then
 								sleep = 5
 
-								ESX.Game.Utils.DrawText3D({x = AnimalCoords.x, y = AnimalCoords.y, z = AnimalCoords.z + 1}, '[E] Tier schlachten', 0.4)
+								ESX.Game.Utils.DrawText3D({x = AnimalCoords.x, y = AnimalCoords.y, z = AnimalCoords.z + 1}, _U('menu_buttering'), 0.4)
 
 								if IsControlJustReleased(0, Keys['E']) then
 									if GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_KNIFE')  then
@@ -290,7 +290,7 @@ function StartHuntingSession()
 											SlaughterAnimal(value.id)
 										end
 									else
-										ESX.ShowNotification('~r~Du benötigst ein Messer!')
+										ESX.ShowNotification(_U('menu_requere_knife'))
 									end
 								end
 

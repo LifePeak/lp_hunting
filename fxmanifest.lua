@@ -13,15 +13,19 @@ shared_script '@es_extended/imports.lua'
 shared_script {
 	'config.lua',
 }
-
+ 
 client_script {
     "@NativeUI/NativeUI.lua",
+	'@es_extended/locale.lua',
+	'locales/*.lua',
 	"shared/functions.lua",
 	"client/main.lua"
 }
 
 server_script {
 	'@mysql-async/lib/MySQL.lua',
+	'@es_extended/locale.lua',
+	'locales/*.lua',
 	"shared/functions.lua",
     "server/main.lua"
 }

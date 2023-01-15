@@ -121,9 +121,11 @@ AddEventHandler('lp_hunting:sell', function()
 
         xPlayer.removeInventoryItem('meat', MeatQuantity)
         xPlayer.removeInventoryItem('leather', LeatherQuantity)
-        TriggerClientEvent('esx:showNotification', xPlayer.source, 'Du verkaufst ' .. LeatherQuantity + MeatQuantity .. 'kg und erhältst ~g~' .. LeatherPrice * LeatherQuantity + MeatPrice * MeatQuantity..'$')
+        local totalPrice = (LeatherPrice * LeatherQuantity + MeatPrice * MeatQuantity)
+        local totalQuantity = (LeatherQuantity + MeatQuantity)
+        TriggerClientEvent('esx:showNotification', xPlayer.source, _U('sell_items',totalQuantity,totalPrice))
     else
-        TriggerClientEvent('esx:showNotification', xPlayer.source, '~r~Du hast weder Fleisch noch Leder dabei.')
+        TriggerClientEvent('esx:showNotification', xPlayer.source, _U('no_meat_lether_in_inventory'))
     end
         
 end)
@@ -148,7 +150,10 @@ end)
 
 RegisterServerEvent('lp_hunting:removePed')
 AddEventHandler('lp_hunting:removePed', function(AnimalId)
-    DeleteEntity(NetworkGetEntityFromNetworkId(AnimalId))
+    local entity = NetworkGetEntityFromNetworkId(AnimalId)
+    if DoesEntityExist(entity) then
+        DeleteEntity(entity)
+    end
 end)
 
 AddEventHandler('onResourceStarting', function(resourceName)
