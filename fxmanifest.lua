@@ -13,9 +13,8 @@ shared_script '@es_extended/imports.lua'
 shared_script {
 	'config.lua',
 }
- 
+-- "@NativeUI/NativeUI.lua",
 client_script {
-    "@NativeUI/NativeUI.lua",
 	'@es_extended/locale.lua',
 	'locales/*.lua',
 	"shared/functions.lua",

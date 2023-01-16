@@ -318,12 +318,14 @@ function SlaughterAnimal(AnimalId)
 
 	
 
-	--ESX.ShowNotification('Du erhältst ' ..AnimalWeight.. 'kg Fleisch')
+	local AnimalNetworkId = NetworkGetNetworkIdFromEntity(AnimalId)
+	if AnimalNetworkId ~= 0 then
+		TriggerServerEvent('lp_hunting:reward', AnimalNetworkId)
 
-	TriggerServerEvent('lp_hunting:reward', AnimalId)
+	end
+	Citizen.Wait(1000)
 	TriggerServerEvent('lp_hunting:removePed', NetworkGetNetworkIdFromEntity(AnimalId))
 
-	DeleteEntity(AnimalId)
 end
 
 function GetCoordZ(x, y)
@@ -379,10 +381,32 @@ RegisterNetEvent('lp_hunting:pedsSpawned')
 AddEventHandler('lp_hunting:pedsSpawned', function(peds)
 	for k, v in pairs(peds) do
 		--if v.Blipid == nil then -- if Blipid is set the ped is alrady in the list
+			
+			--print(v.id)
+			print("PASSED ID: ")
+			print(v.id)
 			local Animal = NetworkGetEntityFromNetworkId(v.id)
+			print("Entity")
+			print(Animal)
+			--[[
 			if Animal == 0 then
 				print("Error while getting Animals plase restart your game")
 			else
+				TaskWanderStandard(Animal, true, true)
+				SetEntityAsMissionEntity(Animal, true, true)
+				local AnimalBlip = AddBlipForEntity(Animal)
+				SetBlipSprite(AnimalBlip, 153)
+				SetBlipColour(AnimalBlip, 1)
+				BeginTextCommandSetBlipName("STRING")
+				AddTextComponentString('Wild')
+				EndTextCommandSetBlipName(AnimalBlip)
+				table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+			end
+
+			--]]
+			if Animal ~= 0 then
+				print("WORK")
+				print(Animal)
 				TaskWanderStandard(Animal, true, true)
 				SetEntityAsMissionEntity(Animal, true, true)
 				local AnimalBlip = AddBlipForEntity(Animal)

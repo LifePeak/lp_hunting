@@ -27,6 +27,8 @@ function GetCoordZ(x, y, src)
     msgpipe[src] = nil -- resetting msg pipe
     return tmp_msg
 end
+
+
 function generateAnimalSpawnLocation(nearestHuntingAreaCoord, areaRange,src)
     local xPlayer = ESX.GetPlayerFromId(src)
     local plyCoords = xPlayer.getCoords(true)
@@ -69,12 +71,17 @@ function spawnAnimals(nearestHuntingArea,peds,src)
             if spawnprobability >= math.random() then
                 local spawnLocation = generateAnimalSpawnLocation(nearestHuntingArea.coord,nearestHuntingArea.radius,src)
                 if spawnLocation ~= false then
-                    local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, true)
-                    local AnimalNetId = NetworkGetNetworkIdFromEntity(AnimalPed)
-                    table.insert(peds, {id = AnimalNetId})
-                    table.insert(animals, {id = AnimalNetId})
-                    if #(peds) < maxAnimalsInHuttingArea then
-                        break
+                    local AnimalPed = CreatePed(5, GetHashKey(animal.model), spawnLocation.x, spawnLocation.y, spawnLocation.z, 0.0, true, false)
+                  
+                    if AnimalPed ~= 0 then
+                        local AnimalNetId =  NetworkGetNetworkIdFromEntity(AnimalPed)
+                        if AnimalNetId ~= 0 then
+                            table.insert(peds, {id = AnimalNetId})
+                            table.insert(animals, {id = AnimalNetId})
+                            if #(peds) < maxAnimalsInHuttingArea then
+                                break
+                            end
+                        end
                     end
                 end
                
@@ -84,25 +91,33 @@ function spawnAnimals(nearestHuntingArea,peds,src)
         --print("Spawning Animal...")
         --print(#peds-maxAnimalsInHuttingArea)
     end
+    Citizen.Wait(5000)
     xPlayer.triggerEvent("lp_hunting:pedsSpawned",peds)
 end
 ------------------------------------| Register Net Events |-------------------------------------
 RegisterServerEvent('lp_hunting:reward')
 AddEventHandler('lp_hunting:reward', function(Animal)
     local xPlayer = ESX.GetPlayerFromId(source)
-    local animalHash = GetEntityModel(Animal)
-    if animalHash == nil or animalHash == false then
-        print("Error in lp_hunting:reward: cant get animalHash")
-    end
-    for k,v in pairs(Config.Animals) do
-        if GetHashKey(v.model) == animalHash then
-            for kk,vv in pairs(v.looting) do
-                local itemAmmount =  math.random(1, vv)
-                xPlayer.addInventoryItem(kk, itemAmmount)
+    print("reward1")
+    local Entity = NetworkGetEntityFromNetworkId(Animal)
+    if Entity ~=0 then
+        local animalHash = GetEntityModel(Entity)
+        print("rewar2")
+
+        if animalHash == nil or animalHash == false then
+            print("Error in lp_hunting:reward: cant get animalHash")
+        end
+        for k,v in pairs(Config.Animals) do
+            if GetHashKey(v.model) == animalHash then
+                print("reward3")
+
+                for kk,vv in pairs(v.loot) do
+                    local itemAmmount =  math.random(1, vv)
+                    xPlayer.addInventoryItem(kk, itemAmmount)
+                end
             end
         end
     end
-    print("Error Animal not found!")
 end)
 
 RegisterServerEvent('lp_hunting:sell')

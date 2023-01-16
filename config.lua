@@ -66,7 +66,7 @@ Config.Animals = {
 Config.HuntingAreaRanges = {
     [1] = {
         ["coord"]= vector3(-1058.492310, 4899.758301, 211.864502),
-        ["radius"] = 150.0
+        ["radius"] = 100.0
     }
 }
 Config.Mensions = {
