@@ -3,7 +3,7 @@ fx_version 'cerulean'
 games {'gta5'}
 author 'ZickZackHD <ZickZackHD#4834>'
 description 'Hunt animals'
-version '1.0.0'
+version '1.0.1'
 name 'lp_hunting'
 url 'https://github.com/zickzackhd'
 lua54 'yes'
