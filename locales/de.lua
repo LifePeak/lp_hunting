@@ -9,4 +9,5 @@ Locales['de'] = {
     ['menu_requere_knife'] = "~r~Du benötigst ein Messer!",
     ['sell_items'] = "Du verkaufst %s kg und erhältst ~g~%s$",
     ['no_meat_lether_in_inventory'] = "~r~Du hast weder Fleisch noch Leder dabei.",
+    ['cant_carry_item'] = "Du kannst nichts mehr tragen."
 }
