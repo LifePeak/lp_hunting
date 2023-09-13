@@ -113,7 +113,7 @@ AddEventHandler('lp_hunting:reward', function(Animal)
 
                 for kk,vv in pairs(v.loot) do
                     local itemAmmount =  math.random(1, vv)
-                    if xPlayer.canCarryItem(kk, itemAmmount) then 
+                    if xPlayer.canCarryItem(kk, itemAmmount) then
                         xPlayer.addInventoryItem(kk, itemAmmount)
                     else
                         xPlayer.showNotification(_U("cant_carry_item"))
