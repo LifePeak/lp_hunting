@@ -230,7 +230,7 @@ function StartHuntingSession()
 
 		-- SpawnJobVehicle
 		if Config.SpawnJobVehicle == true then
-			HuntCar = CreateVehicle(GetHashKey(Config.JobVehicle), plyCoords.x,plyCoords.y,plyCoords.z, 169.79, true, false)
+			HuntCar = CreateVehicle(GetHashKey(Config.JobVehicle), Config.JobVehicleSpawnLocation, true, false)
 		end
  
 		if Config.Inventory == "esx" then
@@ -394,42 +394,43 @@ RegisterNetEvent('lp_hunting:pedsSpawned')
 AddEventHandler('lp_hunting:pedsSpawned', function(peds)
 	for k, v in pairs(peds) do
 		--if v.Blipid == nil then -- if Blipid is set the ped is alrady in the list
-			
-			--print(v.id)
-			--print("PASSED ID: ")
-			--print(v.id)
-			local Animal = NetworkGetEntityFromNetworkId(v.id)
-			--print("Entity")
-			--print(Animal)
-			--[[
-			if Animal == 0 then
-				print("Error while getting Animals plase restart your game")
-			else
-				TaskWanderStandard(Animal, true, true)
-				SetEntityAsMissionEntity(Animal, true, true)
-				local AnimalBlip = AddBlipForEntity(Animal)
-				SetBlipSprite(AnimalBlip, 153)
-				SetBlipColour(AnimalBlip, 1)
-				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString('Wild')
-				EndTextCommandSetBlipName(AnimalBlip)
-				table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
-			end
-
-			--]]
-			if Animal ~= 0 then
-				--print("WORK")
+				--print(v.id)
+				--print("PASSED ID: ")
+				--print(v.id)
+				local Animal = NetToPed(v.id)
+				if DoesEntityExist(Animal) then
+				--print("Entity")
 				--print(Animal)
-				TaskWanderStandard(Animal, true, true)
-				SetEntityAsMissionEntity(Animal, true, true)
-				local AnimalBlip = AddBlipForEntity(Animal)
-				SetBlipSprite(AnimalBlip, 153)
-				SetBlipColour(AnimalBlip, 1)
-				BeginTextCommandSetBlipName("STRING")
-				AddTextComponentString('Wild')
-				EndTextCommandSetBlipName(AnimalBlip)
-				table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
-			end
+				--[[
+				if Animal == 0 then
+					print("Error while getting Animals plase restart your game")
+				else
+					TaskWanderStandard(Animal, true, true)
+					SetEntityAsMissionEntity(Animal, true, true)
+					local AnimalBlip = AddBlipForEntity(Animal)
+					SetBlipSprite(AnimalBlip, 153)
+					SetBlipColour(AnimalBlip, 1)
+					BeginTextCommandSetBlipName("STRING")
+					AddTextComponentString('Wild')
+					EndTextCommandSetBlipName(AnimalBlip)
+					table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+				end
+
+				--]]
+					if Animal ~= 0 then
+						--print("WORK")
+						--print(Animal)
+						TaskWanderStandard(Animal, true, true)
+						SetEntityAsMissionEntity(Animal, true, true)
+						local AnimalBlip = AddBlipForEntity(Animal)
+						SetBlipSprite(AnimalBlip, 153)
+						SetBlipColour(AnimalBlip, 1)
+						BeginTextCommandSetBlipName("STRING")
+						AddTextComponentString('Wild')
+						EndTextCommandSetBlipName(AnimalBlip)
+						table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+					end
+				end
 			
 		--end
 	end
