@@ -259,13 +259,13 @@ function StartHuntingSession()
 
 			-- wait for the server to create the peds and send them back to the client
 			local spawnFailedTimer 	= 0
-			while #AnimalsInSession == 0 and spawnFailedTimer <= 50 do
+			while #AnimalsInSession == 0 and spawnFailedTimer <= Config.ServerTimeout do
 				spawnFailedTimer = spawnFailedTimer + 1
 				Citizen.Wait(200)
 			end
-			if spawnFailedTimer >= 50 then
+			if spawnFailedTimer >= Config.ServerTimeout then
 				ESX.ShowNotification(_U('no_animal_in_range'))
-				OnGoingHuntSession()
+				OnGoingHuntSession = false
 				return
 			end
 

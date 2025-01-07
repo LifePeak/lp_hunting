@@ -1,5 +1,6 @@
 Config = {}
 Config.Locale  = 'de'
+Config.ServerTimeout = 500 -- Try to spawn the peds on server-side. If Config.ServerTimeout is reached, the hunting session will fail. Increase in larger hunting areas.
 Config.ReqireHuntingJob = false
 Config.HuntingWeapon = "WEAPON_MUSKET"
 Config.SpawnJobVehicle = false
@@ -27,7 +28,7 @@ Config.Animals = {
         ['model'] = "a_c_boar",
         ['probability'] = 0.1, --  = 10%
         ['loot'] = {
-            burger=5,  -- maximum item number
+            meat=5,  -- maximum item number
             leather=2, -- maximum item number
         }
     },
@@ -35,7 +36,7 @@ Config.Animals = {
         ['model'] = "a_c_deer",
         ['probability'] = 0.3, --  = 30%
         ['loot'] = {
-            burger=5,  -- maximum item number
+            meat=5,  -- maximum item number
             leather=2, -- maximum item number
         }
     },
@@ -83,7 +84,8 @@ Config.Animals = {
 Config.HuntingAreaRanges = {
     [1] = {
         ["coord"]= vector3(-1058.492310, 4899.758301, 211.864502),
-        ["radius"] = 100.0
+        ["radius"] = 500.0 -- Larger values can cause problems: https://docs.fivem.net/docs/scripting-reference/onesync/. Use at your own risk.
+        -- If you're experiencing problems, make sure to increase Config.ServerTimeout in larger hunting areas.
     }
 }
 Config.Mensions = {
