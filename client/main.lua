@@ -397,29 +397,15 @@ AddEventHandler('lp_hunting:pedsSpawned', function(peds)
 				--print(v.id)
 				--print("PASSED ID: ")
 				--print(v.id)
-				local Animal = NetToPed(v.id)
-				if DoesEntityExist(Animal) then
-				--print("Entity")
-				--print(Animal)
-				--[[
-				if Animal == 0 then
-					print("Error while getting Animals plase restart your game")
-				else
-					TaskWanderStandard(Animal, true, true)
-					SetEntityAsMissionEntity(Animal, true, true)
-					local AnimalBlip = AddBlipForEntity(Animal)
-					SetBlipSprite(AnimalBlip, 153)
-					SetBlipColour(AnimalBlip, 1)
-					BeginTextCommandSetBlipName("STRING")
-					AddTextComponentString('Wild')
-					EndTextCommandSetBlipName(AnimalBlip)
-					table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
-				end
-
-				--]]
-					if Animal ~= 0 then
-						--print("WORK")
-						--print(Animal)
+				if NetworkDoesEntityExistWithNetworkId(v.id) then
+					local Animal = NetToPed(v.id)
+					if DoesEntityExist(Animal) then
+					--print("Entity")
+					--print(Animal)
+					--[[
+					if Animal == 0 then
+						print("Error while getting Animals plase restart your game")
+					else
 						TaskWanderStandard(Animal, true, true)
 						SetEntityAsMissionEntity(Animal, true, true)
 						local AnimalBlip = AddBlipForEntity(Animal)
@@ -429,6 +415,22 @@ AddEventHandler('lp_hunting:pedsSpawned', function(peds)
 						AddTextComponentString('Wild')
 						EndTextCommandSetBlipName(AnimalBlip)
 						table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+					end
+
+					--]]
+						if Animal ~= 0 then
+							--print("WORK")
+							--print(Animal)
+							TaskWanderStandard(Animal, true, true)
+							SetEntityAsMissionEntity(Animal, true, true)
+							local AnimalBlip = AddBlipForEntity(Animal)
+							SetBlipSprite(AnimalBlip, 153)
+							SetBlipColour(AnimalBlip, 1)
+							BeginTextCommandSetBlipName("STRING")
+							AddTextComponentString('Wild')
+							EndTextCommandSetBlipName(AnimalBlip)
+							table.insert(AnimalsInSession,{id= Animal, Blipid=AnimalBlip})
+						end
 					end
 				end
 			
